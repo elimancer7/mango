@@ -1,0 +1,189 @@
+---
+title: "Tarea 1"
+output: word_document
+---
+
+#Leyendo los datos
+```{r}
+datos=read.csv("http://academic.uprm.edu/eacuna/gss2016small.csv",header=T,sep = ",",na.strings="*")
+head(datos)
+```
+
+Adjuntando los datos
+```{r}
+attach(datos)
+```
+
+Funcion que hace la tabla de frecuencias de datos discretos
+
+```{r definition, echo=FALSE}
+tabla.freq<-function(vardatos)
+  
+  
+{#cotejando que el argumento de la funcion no sea un vector nonumerico
+# o una tabla de datos
+if (is.factor(vardatos) || is.data.frame(vardatos)) 
+        stop("need numeric data")
+xname=deparse(substitute(vardatos))
+#calculo de frecuencias absolutas
+fabs=table(vardatos)
+#calculo de frecuencias relativs porcentuales
+frelat=fabs*100/length(vardatos)
+#calculo de frecuencias absolutas acumuladas
+fabs.acum=cumsum(fabs)
+#calculo de frecuencias relativas porcentuales acumuladas
+frelat.acum=cumsum(frelat)
+valores=sort(unique(vardatos))
+b=cbind(valores, fabs,frelat,fabs.acum,frelat.acum)
+rownames(b)=rep("",length(valores))
+colnames(b)[1]=xname
+print(b)
+}
+```
+
+Haciendo la tabla de frecuencias de la variable edad
+
+```{r}
+tabla.freq(sibs)
+```
+```{r}
+plot(as.numeric(unlist(dimnames(table(sibs)))),table(sibs),xlab="Numero de hermanos",ylab="Frecuencia absoluta",type="h")
+#Poniendo las frecuencias absolutas en la parte superior de la linea
+text(as.numeric(unlist(dimnames(table(sibs)))),table(sibs)+.25,labels=table(sibs))
+```
+```{r}
+datos2=read.csv("http://academic.uprm.edu/eacuna/delitosPR2019.csv",header=T,sep = ",",na.strings="*")
+head(datos2)
+attach(datos2)
+```
+```{r}
+tabla.freq(Robo)
+```
+
+```{r}
+a=min(Robo)
+print(a)
+b=max(Robo)
+print(b)
+```
+
+```{r}
+b3=hist(Robo,breaks=seq(a,b, by = (b-a)/8),col="red")
+midpoints=b3$mids
+f.abs=b3$counts
+text(midpoints,f.abs,f.abs,adj=c(.5,-.5))
+```
+```{r}
+library(ggplot2)
+ggplot(datos2, aes(x=Robo)) + 
+  geom_histogram(breaks=seq(a,b, by = (b-a)/8), col="red",fill="green") +
+  stat_bin(aes(y=..count.., label=..count..), breaks=seq(a,b,by=(b-a)/8),geom="text", vjust=1.) +
+  labs(y="Frecuencia")
+```
+```{r}
+mayaguez=data.frame(delitos=factor(c("Ases.", "Viol.","Trata.Hum.", "Robo", "Agr..Grave", "Esc."," Apr..I", "H..Auto")),cantidad=c(3,7,0,16,50,54,246,25))
+ggplot(mayaguez,mapping=aes(x=delitos,y=cantidad,fill=delitos))+geom_bar(stat="identity")+geom_text(stat='identity',aes(label=..y..),vjust=-1)+labs(title="Grafica de barras verticales para delitos tipo I en Mayaguez")
+```
+```{r}
+BAYAMON=datos2[datos2$AREA=="BAYAMON",]
+BAYAMON[1,1]="Bayamón"
+BAYAMON[2,1]="Cataño"
+attach(BAYAMON)
+#pie(Tipo.I,Distrito)
+barras=ggplot(BAYAMON, aes(x=factor(1),y=Tipo.I, fill=factor(Distrito)))+geom_bar(stat="identity",width=1)
+barras+ coord_polar("y")+labs(title="Grafica Circular")
+```
+```{r}
+datos3=read.csv("http://academic.uprm.edu/eacuna/allcovid6.csv",header=T,sep = ",",na.strings="*")
+head(datos3)
+attach(datos3)
+```
+```{r}
+c=min(Mortality_rate)
+print(c)
+d=max(Mortality_rate)
+print(d)
+```
+```{r}
+ggplot(datos3, aes(x=Mortality_rate)) + 
+  geom_histogram(breaks=seq(c,d, by = (d-c)/9), col="red",fill="green") +
+  stat_bin(aes(y=..count.., label=..count..), breaks=seq(c,d,by=(d-c)/9),geom="text", vjust=1.) +
+  labs(y="Frecuencia")
+```
+Medidas de localizacion
+
+1-Calculo de la Media
+```{r}
+mean(Positivity_rate)
+```
+
+2-Calculo de la Mediana
+```{r}
+median(Positivity_rate)
+```
+
+3- Calculo de la Moda
+
+Construyendo primero una funcion para calcular la moda
+```{r}
+moda=function(x,na.rm=FALSE)
+{
+#Funcion que encuentra la moda de un vector x
+
+if(na.rm){x=x[!is.na(x)]}
+else if(any(is.na(x)))return(x[FALSE][NA])
+  m1=sort(table(x),decreasing=T)
+  moda=names(m1[m1==m1[1]])
+if(is.numeric(x)) {return(as.numeric(moda))}
+else {return(moda)}
+}
+```
+
+La variables Positivity rate no tiene moda.
+
+Calculando la moda de la variable Edad
+
+```{r}
+moda(Positivity_rate)
+```
+
+
+Medidas estadisticas de Dispersion
+
+4- Rango o amplitud
+```{r}
+rango=max(Positivity_rate)-min(Positivity_rate)
+print(rango)
+```
+
+5- La Varianza
+```{r}
+var(Positivity_rate)
+```
+
+6- La desviacion estandar
+```{r}
+sd(Positivity_rate)
+```
+
+Criterio para outliers
+```{r}
+lower=mean(Positivity_rate)-3*sd(Positivity_rate)
+upper=mean(Positivity_rate)+3*sd(Positivity_rate)
+cat("\nEl intervalo es:\n")
+cat("\n",lower,"-",upper)
+```
+No hay outliers ya que ningun valor esta por fuera del intervalo.
+
+Calculo del coeficiente de Variacion CV=s*100%/|x|
+```{r}
+cv.positivity=sd(Positivity_rate)*100/abs(mean(Positivity_rate))
+print(cv.positivity)
+
+```
+```{r}
+hist(Positivity_rate)
+
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
